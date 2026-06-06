@@ -241,13 +241,11 @@ const CL=['#4f8aff','#ff6b6b','#3ddc84','#ffd166','#b06aff','#ff8c42','#4ecdc4',
 const TC={comercial:'#4f8aff',juridico:'#b06aff'};
 
 async function sb(p,o={}){
-  const isNew=SK.startsWith('sb_');
-  const headers=isNew
-    ?{'Authorization':'Bearer '+SK,'apikey':SK,'Content-Type':'application/json','Prefer':'return=representation',...(o.headers||{})}
-    :{'apikey':SK,'Authorization':'Bearer '+SK,'Content-Type':'application/json','Prefer':'return=representation',...(o.headers||{})};
-  const url=isNew?(SU+'/rest/v1/'+p).replace('/rest/v1/rest/v1/','/rest/v1/'):SU+'/rest/v1/'+p;
-  const r=await fetch(url,{headers,...o});
-  if(!r.ok)throw new Error(await r.text());
+  const base=SU.replace(/\/rest\/v1\/?$/,'');
+  const url=base+'/rest/v1/'+p;
+  const h={'Content-Type':'application/json','Prefer':'return=representation','apikey':SK,'Authorization':'Bearer '+SK,...(o.headers||{})};
+  const r=await fetch(url,{headers:h,...o});
+  if(!r.ok){const e=await r.text();throw new Error(e);}
   const t=await r.text();return t?JSON.parse(t):[];
 }
 
