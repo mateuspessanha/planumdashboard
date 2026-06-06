@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sales Command</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#080810;--bg2:#0f0f1c;--bg3:#14142a;--bg4:#1c1c38;--border:#ffffff12;--border2:#ffffff20;--text:#e8e8f0;--muted:#6b6b8a;--accent:#4f8aff;--green:#3ddc84;--yellow:#ffd166;--red:#ff6b6b;--purple:#b06aff;--orange:#ff8c42;--com:#4f8aff;--jur:#b06aff}
@@ -160,10 +161,19 @@ create table settings (
 alter table sellers enable row level security;
 alter table sales enable row level security;
 alter table settings enable row level security;
-create policy "pub sellers" on sellers for all using (true);
-create policy "pub sales" on sales for all using (true);
-create policy "pub settings" on settings for all using (true);</div></div></div>
+create policy "pub sellers" on sellers for all to anon using (true) with check (true);
+create policy "pub sales" on sales for all to anon using (true) with check (true);
+create policy "pub settings" on settings for all to anon using (true) with check (true);</div></div></div>
   <div class="step"><div class="step-n">3</div><div class="step-b"><div class="step-t">Settings → API → copie a URL e a chave "anon public"</div></div></div>
+  <div style="background:#ffd16615;border:1px solid #ffd16644;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#ffd166;">
+    <strong>⚠️ Já tem o banco criado?</strong> Execute este SQL no Supabase para corrigir permissões:<br><br>
+    <code style="font-size:10px;color:#a5f3b4">drop policy if exists "pub sellers" on sellers;<br>
+drop policy if exists "pub sales" on sales;<br>
+drop policy if exists "pub settings" on settings;<br>
+create policy "pub sellers" on sellers for all to anon using (true) with check (true);<br>
+create policy "pub sales" on sales for all to anon using (true) with check (true);<br>
+create policy "pub settings" on settings for all to anon using (true) with check (true);</code>
+  </div>
   <div class="fi"><label class="fl">Supabase URL</label><input class="finput" id="su" type="text" placeholder="https://xxxx.supabase.co"></div>
   <div class="fi"><label class="fl">Anon Key</label><input class="finput" id="sk" type="text" placeholder="eyJhbGci..."></div>
   <button class="btn-p" onclick="saveSetup()">Conectar →</button>
@@ -234,25 +244,55 @@ create policy "pub settings" on settings for all using (true);</div></div></div>
 
 <script>
 let SU='',SK='';
+function todayBR(){const n=new Date();const br=new Date(n.getTime()-3*60*60*1000);return br.toISOString().split('T')[0];}
 let S={metas:{global:0,comercial:0,juridico:0},month:new Date().getMonth()+1,year:new Date().getFullYear(),sellers:[],sales:{}};
-let tab='ov',tv='geral',pm='month',sd=toISO(new Date()),sw=null,rs='',re='';
+let tab='ov',tv='geral',pm='month',sd=todayBR(),sw=null,rs='',re='';
 const MN=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
 const CL=['#4f8aff','#ff6b6b','#3ddc84','#ffd166','#b06aff','#ff8c42','#4ecdc4','#ff69b4','#a3e635','#fb923c'];
 const TC={comercial:'#4f8aff',juridico:'#b06aff'};
 
+let _supa=null;
+function getSupa(){if(!_supa)_supa=supabase.createClient(SU,SK);return _supa;}
+
 async function sb(p,o={}){
-  const base=SU.replace(/\/rest\/v1\/?$/,'').replace(/\/$/,'');
-  const url=base+'/rest/v1/'+p;
-  const isPub=SK.startsWith('sb_publishable_')||SK.startsWith('sb_secret_');
-  const h={
-    'Content-Type':'application/json',
-    'Prefer':'return=representation',
-    ...(isPub?{'sb-publishable-key':SK}:{'apikey':SK,'Authorization':'Bearer '+SK}),
-    ...(o.headers||{})
-  };
-  const r=await fetch(url,{headers:h,...o});
-  if(!r.ok){const e=await r.text();throw new Error(e);}
-  const t=await r.text();return t?JSON.parse(t):[];
+  const client=getSupa();
+  const method=(o.method||'GET').toUpperCase();
+  const table=p.split('?')[0];
+  const prefer=o.headers&&(o.headers['Prefer']||'').includes('merge-duplicates');
+
+  if(method==='GET'){
+    const qs=p.includes('?')?p.split('?')[1]:'';
+    const params=new URLSearchParams(qs);
+    let q=client.from(table).select(params.get('select')||'*');
+    const order=params.get('order');
+    if(order){const[col,...rest]=order.split('.');q=q.order(col,{ascending:rest.join('.')!=='desc'});}
+    const eqM=p.match(/[?&](\w+)=eq\.([^&]+)/);
+    if(eqM)q=q.eq(eqM[1],eqM[2]);
+    const{data,error}=await q;
+    if(error)throw new Error(error.message);
+    return data||[];
+  }
+  if(method==='POST'){
+    const body=JSON.parse(o.body);
+    if(prefer){
+      const pk=table==='settings'?'key':table==='sales'?'id':'id';
+      const{data,error}=await client.from(table).upsert(body,{onConflict:pk}).select();
+      if(error)throw new Error(error.message);
+      return data||[];
+    } else {
+      const{data,error}=await client.from(table).insert(body).select();
+      if(error)throw new Error(error.message);
+      return data||[];
+    }
+  }
+  if(method==='DELETE'){
+    const eqM=p.match(/(\w+)=eq\.([^&?]+)/);
+    if(!eqM)throw new Error('DELETE requires eq filter');
+    const{error}=await client.from(table).delete().eq(eqM[1],eqM[2]);
+    if(error)throw new Error(error.message);
+    return[];
+  }
+  throw new Error('Unsupported: '+method);
 }
 
 async function init(){
@@ -267,7 +307,7 @@ async function saveSetup(){
   const u=document.getElementById('su').value.trim().replace(/\/$/,'');
   const k=document.getElementById('sk').value.trim();
   if(!u||!k){serr('Preencha URL e Key.');return;}
-  SU=u;SK=k;localStorage.setItem('sc_url',u);localStorage.setItem('sc_key',k);
+  _supa=null;_supa=null;SU=u;SK=k;localStorage.setItem('sc_url',u);localStorage.setItem('sc_key',k);
   document.getElementById('setup-screen').style.display='none';await init();
 }
 function serr(m){const e=document.getElementById('serr');e.textContent=m;e.style.display='block';}
@@ -464,9 +504,12 @@ async function submitSale(){
   const am=parseFloat(document.getElementById('ia')?.value);
   if(!sid||!dt||isNaN(am)||am<=0){toast('Preencha todos os campos','e');return;}
   try{
-    await sb('sales',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({id:sid+'_'+dt,seller_id:sid,date:dt,amount:am,updated_at:new Date().toISOString()})});
-    if(!S.sales[dt])S.sales[dt]={};S.sales[dt][sid]=am;
-    toast('Venda salva! ✓');renderAll();
+    // Accumulate: get existing amount and add new value
+    const existing=(S.sales[dt]&&S.sales[dt][sid])||0;
+    const total=existing+am;
+    await sb('sales',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({id:sid+'_'+dt,seller_id:sid,date:dt,amount:total,updated_at:new Date().toISOString()})});
+    if(!S.sales[dt])S.sales[dt]={};S.sales[dt][sid]=total;
+    toast('Venda salva! Total do dia: R$'+total.toLocaleString('pt-BR')+'');renderAll();
   }catch(e){toast('Erro: '+e.message,'e');}
 }
 
