@@ -241,9 +241,15 @@ const CL=['#4f8aff','#ff6b6b','#3ddc84','#ffd166','#b06aff','#ff8c42','#4ecdc4',
 const TC={comercial:'#4f8aff',juridico:'#b06aff'};
 
 async function sb(p,o={}){
-  const base=SU.replace(/\/rest\/v1\/?$/,'');
+  const base=SU.replace(/\/rest\/v1\/?$/,'').replace(/\/$/,'');
   const url=base+'/rest/v1/'+p;
-  const h={'Content-Type':'application/json','Prefer':'return=representation','apikey':SK,'Authorization':'Bearer '+SK,...(o.headers||{})};
+  const isPub=SK.startsWith('sb_publishable_')||SK.startsWith('sb_secret_');
+  const h={
+    'Content-Type':'application/json',
+    'Prefer':'return=representation',
+    ...(isPub?{'sb-publishable-key':SK}:{'apikey':SK,'Authorization':'Bearer '+SK}),
+    ...(o.headers||{})
+  };
   const r=await fetch(url,{headers:h,...o});
   if(!r.ok){const e=await r.text();throw new Error(e);}
   const t=await r.text();return t?JSON.parse(t):[];
