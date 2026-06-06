@@ -341,10 +341,24 @@ function teamMeta(){if(tv==='comercial')return S.metas.comercial;if(tv==='juridi
 
 function getPD(){
   const bd=getBD(S.year,S.month);
-  if(pm==='month')return bd;
-  if(pm==='day')return[sd].filter(d=>{const w=fromISO(d).getDay();return w!==0&&w!==6;});
-  if(pm==='week'&&sw){const ws=fromISO(sw);const we=new Date(ws);we.setDate(ws.getDate()+4);return bd.filter(d=>{const dt=fromISO(d);return dt>=ws&&dt<=we;});}
-  if(pm==='range'&&rs&&re)return bd.filter(d=>d>=rs&&d<=re);
+  if(pm==='month'){
+    // All days of month for sales aggregation (weekends included)
+    const all=[];const x=new Date(S.year,S.month-1,1);
+    while(x.getMonth()===S.month-1){all.push(toISO(new Date(x)));x.setDate(x.getDate()+1);}
+    return all;
+  }
+  if(pm==='day')return[sd];
+  if(pm==='week'&&sw){
+    const ws=fromISO(sw);const we=new Date(ws);we.setDate(ws.getDate()+6);
+    const all=[];const x=new Date(S.year,S.month-1,1);
+    while(x.getMonth()===S.month-1){all.push(toISO(new Date(x)));x.setDate(x.getDate()+1);}
+    return all.filter(d=>{const dt=fromISO(d);return dt>=ws&&dt<=we;});
+  }
+  if(pm==='range'&&rs&&re){
+    const all=[];const x=new Date(S.year,S.month-1,1);
+    while(x.getMonth()===S.month-1){all.push(toISO(new Date(x)));x.setDate(x.getDate()+1);}
+    return all.filter(d=>d>=rs&&d<=re);
+  }
   return[];
 }
 
