@@ -309,6 +309,15 @@ async function saveSetup(){
   if(!u||!k){serr('Preencha URL e Key.');return;}
   _supa=null;_supa=null;SU=u;SK=k;localStorage.setItem('sc_url',u);localStorage.setItem('sc_key',k);
   document.getElementById('setup-screen').style.display='none';await init();
+// Auto-refresh every 30 seconds for real-time sync
+setInterval(async()=>{
+  try{
+    const[sa]=await Promise.all([sb('sales?select=*')]);
+    S.sales={};
+    sa.forEach(s=>{if(!S.sales[s.date])S.sales[s.date]={};S.sales[s.date][s.seller_id]=parseFloat(s.amount);});
+    if(tab!=='in')renderMC();
+  }catch(e){}
+},30000);
 }
 function serr(m){const e=document.getElementById('serr');e.textContent=m;e.style.display='block';}
 
@@ -497,17 +506,28 @@ function renderIN(){
   const mo=arr=>arr.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
   const opts=(cs.length?`<optgroup label="💼 Comercial">${mo(cs)}</optgroup>`:'')+
              (js.length?`<optgroup label="⚖️ Jurídico">${mo(js)}</optgroup>`:'');
-  const dd=sd.split('-').reverse().join('/');
+  const inDate=document.getElementById('id')?.value||sd;
+  const dd=inDate.split('-').reverse().join('/');
   const rows=S.sellers.map(s=>{
-    const v=S.sales[sd]?.[s.id];
+    const v=S.sales[inDate]?.[s.id];
+    const editBtns=v?`
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="color:${s.color};font-family:monospace;font-weight:700">${fmtR(v)}</span>
+        <button onclick="editSale('${s.id}','${inDate}',${v})" style="background:#ffd16615;border:1px solid #ffd16644;border-radius:6px;color:#ffd166;font-size:11px;padding:3px 8px;cursor:pointer">✏️ Editar</button>
+        <button onclick="deleteSale('${s.id}','${inDate}')" style="background:#ff6b6b15;border:1px solid #ff6b6b44;border-radius:6px;color:#ff6b6b;font-size:11px;padding:3px 8px;cursor:pointer">🗑️ Zerar</button>
+      </div>`
+      :`<span style="color:var(--muted)">—</span>`;
     return`<div class="dsr"><div class="dsn"><div class="dot" style="background:${s.color}"></div>${s.name}<span class="tpill ${s.team==='comercial'?'pc':'pj'}" style="font-size:9px;padding:1px 5px">${s.team==='comercial'?'COM':'JUR'}</span></div>
-    <div class="dsv" style="color:${v?s.color:'var(--muted)'}">${v?fmtR(v):'—'}</div></div>`;
+    <div>${editBtns}</div></div>`;
   }).join('')||'<div style="color:var(--muted);font-size:13px">Nenhum vendedor.</div>';
   return`<div class="card"><div class="ct">Registrar Venda</div>
     <div class="fg"><label class="flbl">Vendedor</label><select class="finp" id="is">${opts}</select></div>
-    <div class="fg"><label class="flbl">Data</label><input type="date" class="finp" id="id" value="${sd}"></div>
-    <div class="fg"><label class="flbl">Valor (R$)</label><input type="number" class="finp" id="ia" placeholder="Ex: 15000"></div>
-    <button class="bfull" onclick="submitSale()">💾 Salvar Venda</button>
+    <div class="fg"><label class="flbl">Data</label><input type="date" class="finp" id="id" value="${sd}" onchange="renderMC()"></div>
+    <div class="fg">
+      <label class="flbl">Valor (R$) — será SOMADO ao existente no dia</label>
+      <input type="number" class="finp" id="ia" placeholder="Ex: 15000">
+    </div>
+    <button class="bfull" onclick="submitSale()">💾 Adicionar Venda</button>
   </div>
   <div class="card"><div class="ct">Vendas em ${dd}</div>${rows}</div>`;
 }
@@ -522,8 +542,11 @@ async function submitSale(){
     const existing=(S.sales[dt]&&S.sales[dt][sid])||0;
     const total=existing+am;
     await sb('sales',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({id:sid+'_'+dt,seller_id:sid,date:dt,amount:total,updated_at:new Date().toISOString()})});
+    // Update local state immediately
     if(!S.sales[dt])S.sales[dt]={};S.sales[dt][sid]=total;
-    toast('Venda salva! Total do dia: R$'+total.toLocaleString('pt-BR')+'');renderAll();
+    document.getElementById('ia').value='';
+    toast('✅ +'+fmtR(am)+' adicionado! Total '+dt.split('-').reverse().join('/')+': '+fmtR(total));
+    renderAll();
   }catch(e){toast('Erro: '+e.message,'e');}
 }
 
@@ -546,6 +569,35 @@ function renderCF(){
       <button class="bghost" style="border-color:#ff6b6b44;color:var(--red)" onclick="resetConn()">🔌 Trocar Banco</button>
     </div>
   </div>`;
+}
+
+async function editSale(sid,dt,currentVal){
+  const novo=prompt('Novo valor total para '+dt+' (substitui o atual de R$'+currentVal.toLocaleString('pt-BR')+'):');
+  if(novo===null)return;
+  const am=parseFloat(novo.replace(',','.'));
+  if(isNaN(am)||am<0){toast('Valor inválido','e');return;}
+  try{
+    if(am===0){
+      await sb('sales?seller_id=eq.'+sid+'&date=eq.'+dt,{method:'DELETE'});
+      if(S.sales[dt])delete S.sales[dt][sid];
+      toast('Venda zerada!');
+    } else {
+      await sb('sales',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({id:sid+'_'+dt,seller_id:sid,date:dt,amount:am,updated_at:new Date().toISOString()})});
+      if(!S.sales[dt])S.sales[dt]={};S.sales[dt][sid]=am;
+      toast('Venda atualizada para '+fmtR(am));
+    }
+    renderAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
+}
+
+async function deleteSale(sid,dt){
+  const seller=S.sellers.find(s=>s.id===sid);
+  if(!confirm('Zerar venda de '+seller.name+' em '+dt.split('-').reverse().join('/')+'?'))return;
+  try{
+    await sb('sales?seller_id=eq.'+sid+'&date=eq.'+dt,{method:'DELETE'});
+    if(S.sales[dt])delete S.sales[dt][sid];
+    toast('Venda zerada!');renderAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
 }
 
 async function addSeller(){
@@ -609,6 +661,15 @@ function toast(msg,type='s'){
 }
 
 init();
+// Auto-refresh every 30 seconds for real-time sync
+setInterval(async()=>{
+  try{
+    const[sa]=await Promise.all([sb('sales?select=*')]);
+    S.sales={};
+    sa.forEach(s=>{if(!S.sales[s.date])S.sales[s.date]={};S.sales[s.date][s.seller_id]=parseFloat(s.amount);});
+    if(tab!=='in')renderMC();
+  }catch(e){}
+},30000);
 </script>
 </body>
 </html>
