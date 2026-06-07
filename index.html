@@ -412,7 +412,9 @@ function renderOV(){
   const pd=getPD();const bd=getBD(S.year,S.month);
   if(tv==='geral')return renderGeralOV(pd,bd);
   const ts=teamSellers();const tm=teamMeta();
-  const dt=tm&&bd.length?tm/bd.length:0;const pt=pd.length*dt;
+  const dt=tm&&bd.length?tm/bd.length:0;
+  const pbd2=pd.filter(d=>{const w=fromISO(d).getDay();return w!==0&&w!==6;});
+  const pt=pbd2.length*dt;
   const stats=getStats(ts,pd,pt);const tot=stats.reduce((a,s)=>a+s.total,0);
   const op=pct(tot,pt);const rem=Math.max(pt-tot,0);
   const sc=op>=100?'var(--green)':op>=80?'var(--yellow)':op>=50?'var(--accent)':'var(--red)';
@@ -433,11 +435,13 @@ function renderOV(){
 }
 
 function renderGeralOV(pd,bd){
-  const gm=teamMeta();const dg=gm&&bd.length?gm/bd.length:0;const pg=pd.length*dg;
+  const gm=teamMeta();const dg=gm&&bd.length?gm/bd.length:0;
+  const pbd=pd.filter(d=>{const w=fromISO(d).getDay();return w!==0&&w!==6;});
+  const pg=pbd.length*dg;
   const td={};['comercial','juridico'].forEach(t=>{
     const se=S.sellers.filter(s=>s.team===t);
     const me=t==='comercial'?S.metas.comercial:S.metas.juridico;
-    const dm=me&&bd.length?me/bd.length:0;const pm2=pd.length*dm;
+    const dm=me&&bd.length?me/bd.length:0;const pm2=pbd.length*dm;
     const st=getStats(se,pd,pm2);const tot=st.reduce((a,s)=>a+s.total,0);
     td[t]={sellers:se,meta:me,periodMeta:pm2,stats:st,total:tot,pct:pct(tot,pm2),daily:dm};
   });
@@ -483,7 +487,9 @@ function renderDC(bd,dt,sellers){
 function renderRK(){
   const pd=getPD();const bd=getBD(S.year,S.month);
   const ts=teamSellers();const tm=teamMeta();
-  const dt=tm&&bd.length?tm/bd.length:0;const pt=pd.length*dt;
+  const dt=tm&&bd.length?tm/bd.length:0;
+  const pbd2=pd.filter(d=>{const w=fromISO(d).getDay();return w!==0&&w!==6;});
+  const pt=pbd2.length*dt;
   const stats=getStats(ts,pd,pt);const tot=stats.reduce((a,s)=>a+s.total,0);
   const medals=['🥇','🥈','🥉'];
   const topBg=['linear-gradient(135deg,#ffd16620,#ffd16608)','linear-gradient(135deg,#aaaaaa15,#aaaaaa05)','linear-gradient(135deg,#cd7f3215,#cd7f3205)'];
