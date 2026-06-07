@@ -1,179 +1,337 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sales Command</title>
+<title>Planum Solution · Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#080810;--bg2:#0f0f1c;--bg3:#14142a;--bg4:#1c1c38;--border:#ffffff12;--border2:#ffffff20;--text:#e8e8f0;--muted:#6b6b8a;--accent:#4f8aff;--green:#3ddc84;--yellow:#ffd166;--red:#ff6b6b;--purple:#b06aff;--orange:#ff8c42;--com:#4f8aff;--jur:#b06aff}
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Syne',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
-#setup-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.setup-card{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;padding:40px;max-width:540px;width:100%}
-.setup-logo{font-size:40px;margin-bottom:16px}
-.setup-title{font-size:26px;font-weight:800;margin-bottom:8px}
-.setup-sub{color:var(--muted);font-size:14px;margin-bottom:28px;line-height:1.6}
-.step{display:flex;gap:14px;margin-bottom:18px}
-.step-n{background:var(--accent);color:#000;font-weight:800;font-size:12px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
-.step-b .step-t{font-size:13px;font-weight:700;margin-bottom:4px}
-.step-b .step-d{font-size:12px;color:var(--muted);line-height:1.5}
-.step-code{background:var(--bg4);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-family:'DM Mono',monospace;font-size:11px;color:#a5f3b4;margin-top:8px;white-space:pre;overflow-x:auto}
-.fi{margin-bottom:14px}
-.fl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:block}
-.finput{width:100%;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:14px;padding:12px 16px;outline:none;font-family:'DM Mono',monospace}
-.finput:focus{border-color:var(--accent)}
-.btn-p{width:100%;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:15px;font-weight:800;padding:14px;cursor:pointer;font-family:'Syne',sans-serif}
-.setup-err{color:var(--red);font-size:13px;margin-top:10px;display:none}
-#app{display:none;max-width:920px;margin:0 auto;padding-bottom:60px}
-.hdr{background:var(--bg);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;gap:12px;flex-wrap:wrap}
-.hl{display:flex;align-items:center;gap:12px}
-.logo{font-size:22px}
-.at{font-size:18px;font-weight:800;letter-spacing:-0.5px}
-.as{font-size:11px;color:var(--muted)}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:5px;animation:pulse 2s infinite}
-.sync-dot.off{background:var(--red);animation:none}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-.hr{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.hbtn{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:12px;font-weight:700;padding:7px 14px;cursor:pointer;font-family:'Syne',sans-serif}
-.mnav-wrap{display:flex;align-items:center;gap:6px}
-.mnav{background:var(--bg3);border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:16px;padding:4px 10px;cursor:pointer}
-.mlabel{font-size:13px;font-weight:700;min-width:72px;text-align:center}
-.team-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;display:flex}
-.ttab{flex:1;background:transparent;border:none;border-bottom:3px solid transparent;color:var(--muted);font-size:13px;font-weight:800;padding:13px 8px;cursor:pointer;font-family:'Syne',sans-serif;text-align:center;transition:all .2s}
-.ttab.g.active{color:#e8e8f0;border-bottom-color:#e8e8f0}
-.ttab.c.active{color:var(--com);border-bottom-color:var(--com)}
-.ttab.j.active{color:var(--jur);border-bottom-color:var(--jur)}
-.tbadge{display:inline-block;font-size:10px;padding:2px 7px;border-radius:10px;margin-left:5px;font-weight:700}
-.bg{background:#ffffff15;color:#aaa}
-.bc{background:#4f8aff20;color:var(--com)}
-.bj{background:#b06aff20;color:var(--jur)}
-.period-bar{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pmodes{display:flex;gap:4px}
-.pbtn{background:transparent;border:1px solid var(--border2);border-radius:6px;color:var(--muted);font-size:12px;padding:5px 14px;cursor:pointer;font-family:'Syne',sans-serif}
-.pbtn.active{background:#4f8aff15;border-color:var(--accent);color:var(--accent);font-weight:700}
-.pinput{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:12px;padding:5px 10px;outline:none;font-family:'DM Mono',monospace}
-.tabs{display:flex;border-bottom:1px solid var(--border);overflow-x:auto}
-.tab{flex:1;min-width:80px;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--muted);font-size:12px;font-weight:700;padding:13px 8px;cursor:pointer;font-family:'Syne',sans-serif;white-space:nowrap}
-.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-.main{padding:16px}
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:14px}
-.ct{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px;color:var(--muted);margin-bottom:16px}
-.kgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
-@media(min-width:600px){.kgrid{grid-template-columns:repeat(4,1fr)}}
-.kcard{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px;border-top-width:3px}
-.kl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
-.kv{font-size:20px;font-weight:800;font-family:'DM Mono',monospace;line-height:1}
-.ks{font-size:11px;color:var(--muted);margin-top:4px}
-.tov-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px}
-@media(max-width:500px){.tov-grid{grid-template-columns:1fr}}
-.tov-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px}
-.tov-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.tov-name{font-size:13px;font-weight:800}
-.tov-pct{font-size:22px;font-weight:800;font-family:'DM Mono',monospace}
-.tov-meta{font-size:11px;color:var(--muted);margin-top:6px}
-.ptrack{background:var(--bg4);border-radius:10px;overflow:hidden;position:relative}
-.pfill{height:100%;border-radius:10px;transition:width .9s cubic-bezier(.4,0,.2,1)}
-.pextra{position:absolute;right:6px;top:2px;font-size:10px;color:#000;font-weight:800}
-.srow{margin-bottom:16px}
-.smeta{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
-.sname{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700}
-.dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.sval{font-size:14px;font-weight:800;font-family:'DM Mono',monospace}
-.spct{font-size:11px;color:var(--muted);margin-left:6px}
-.ri{border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px}
-.rinner{display:flex;align-items:center;gap:12px}
-.medal{font-size:24px;min-width:34px;text-align:center}
-.rbody{flex:1;min-width:0}
-.rnr{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
-.rname{font-size:15px;font-weight:800}
-.ramt{font-size:17px;font-weight:800;font-family:'DM Mono',monospace}
-.rfoot{display:flex;justify-content:space-between;margin-top:5px}
-.rfoot span{font-size:11px;color:var(--muted)}
-.tpill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:8px;font-weight:700;margin-left:6px;vertical-align:middle}
-.pc{background:#4f8aff20;color:var(--com)}
-.pj{background:#b06aff20;color:var(--jur)}
-.dist-bar{display:flex;border-radius:8px;overflow:hidden;height:26px;margin-bottom:12px}
-.dleg{display:flex;flex-wrap:wrap;gap:10px}
-.dli{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
-.ddot{width:10px;height:10px;border-radius:2px}
-.dchart{display:flex;align-items:flex-end;gap:3px;height:80px;overflow-x:auto;padding-bottom:4px}
-.dcol{display:flex;flex-direction:column;align-items:center;min-width:18px;flex:1}
-.dbw{width:100%;position:relative;height:60px}
-.db{position:absolute;bottom:0;width:100%;border-radius:3px 3px 0 0;transition:height .6s ease}
-.dtl{position:absolute;width:100%;height:1px;background:#ff6b6b55}
-.dlbl{font-size:9px;color:var(--muted);margin-top:2px;font-family:'DM Mono',monospace}
-.cleg{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap}
-.cli{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
-.cldot{width:8px;height:8px;border-radius:2px}
-.fg{margin-bottom:16px}
-.flbl{display:block;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:6px}
-.finp{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;color:var(--text);font-size:14px;padding:11px 14px;outline:none;font-family:'DM Mono',monospace}
-.finp:focus{border-color:var(--accent)}
-select.finp{font-family:'Syne',sans-serif}
-.bfull{width:100%;background:var(--accent);border:none;border-radius:10px;color:#000;font-size:14px;font-weight:800;padding:12px;cursor:pointer;font-family:'Syne',sans-serif;margin-top:8px}
-.bghost{background:transparent;border:1px solid var(--border2);border-radius:8px;color:var(--muted);font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;font-family:'Syne',sans-serif}
-.bdanger{background:#ff6b6b15;border:1px solid #ff6b6b44;border-radius:6px;color:var(--red);font-size:18px;line-height:1;padding:3px 10px;cursor:pointer}
-.dsr{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);align-items:center}
-.dsn{display:flex;align-items:center;gap:8px;font-size:13px}
-.dsv{font-size:13px;font-weight:700;font-family:'DM Mono',monospace}
-.ssr{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
-.ssn{display:flex;align-items:center;gap:10px;color:var(--text);font-size:13px}
-#loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:12px}
-.ll{font-size:36px;animation:spin 2s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.lt{color:var(--muted);font-size:14px}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:20px;font-weight:700;font-size:13px;color:#000;z-index:300;pointer-events:none;opacity:0;transition:opacity .3s;white-space:nowrap}
-.toast.show{opacity:1}
+
+/* ── TOKENS ── */
+:root {
+  --planum: #A16BB2;
+  --planum-light: #C49AD0;
+  --planum-dark: #7A4F89;
+  --planum-glow: #A16BB230;
+  --planum-subtle: #A16BB210;
+
+  --com: #4E9EE8;
+  --jur: #A16BB2;
+  --green: #34C77B;
+  --yellow: #F5B731;
+  --red: #F05C5C;
+  --orange: #F0874A;
+
+  --radius: 14px;
+  --radius-sm: 8px;
+  --font: 'Outfit', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+/* ── DARK THEME ── */
+[data-theme="dark"] {
+  --bg:      #0C0C14;
+  --bg2:     #111120;
+  --bg3:     #181828;
+  --bg4:     #1F1F35;
+  --bg5:     #252540;
+  --border:  #ffffff0d;
+  --border2: #ffffff18;
+  --border3: #ffffff28;
+  --text:    #EEE8F4;
+  --text2:   #B8AFCA;
+  --muted:   #6B6282;
+  --shadow:  0 4px 24px #00000060;
+  --shadow2: 0 8px 40px #00000080;
+}
+
+/* ── LIGHT THEME ── */
+[data-theme="light"] {
+  --bg:      #F4F1F8;
+  --bg2:     #FFFFFF;
+  --bg3:     #EDE8F5;
+  --bg4:     #E2DBF0;
+  --bg5:     #D5CCEB;
+  --border:  #A16BB218;
+  --border2: #A16BB230;
+  --border3: #A16BB245;
+  --text:    #1A1228;
+  --text2:   #4A3D60;
+  --muted:   #9A8CB0;
+  --shadow:  0 4px 24px #A16BB215;
+  --shadow2: 0 8px 40px #A16BB225;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; transition: background .3s, color .3s; }
+
+/* ── SETUP ── */
+#setup-screen { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; background: var(--bg); }
+.setup-card { background:var(--bg2); border:1px solid var(--border2); border-radius:20px; padding:40px; max-width:560px; width:100%; box-shadow: var(--shadow2); }
+.setup-logo { font-size:36px; margin-bottom:12px; }
+.setup-brand { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+.setup-brand-name { font-size:22px; font-weight:800; letter-spacing:-0.5px; }
+.setup-brand-name span { color: var(--planum); }
+.setup-sub { color:var(--muted); font-size:14px; margin-bottom:28px; line-height:1.7; }
+.step { display:flex; gap:14px; margin-bottom:18px; }
+.step-n { background:var(--planum); color:#fff; font-weight:700; font-size:11px; width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:2px; }
+.step-b .step-t { font-size:13px; font-weight:600; margin-bottom:3px; color:var(--text); }
+.step-b .step-d { font-size:12px; color:var(--muted); line-height:1.5; }
+.step-code { background:var(--bg4); border:1px solid var(--border2); border-radius:8px; padding:12px 14px; font-family:var(--mono); font-size:11px; color:#A5D6A7; margin-top:8px; white-space:pre; overflow-x:auto; line-height:1.6; }
+.fi { margin-bottom:14px; }
+.fl { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; display:block; font-weight:600; }
+.finput { width:100%; background:var(--bg3); border:1px solid var(--border2); border-radius:10px; color:var(--text); font-size:14px; padding:12px 16px; outline:none; font-family:var(--mono); transition:border-color .2s; }
+.finput:focus { border-color:var(--planum); box-shadow: 0 0 0 3px var(--planum-glow); }
+.btn-p { width:100%; background:linear-gradient(135deg, var(--planum), var(--planum-dark)); border:none; border-radius:10px; color:#fff; font-size:15px; font-weight:700; padding:14px; cursor:pointer; font-family:var(--font); transition:opacity .2s, transform .1s; letter-spacing:.3px; }
+.btn-p:hover { opacity:.9; transform:translateY(-1px); }
+.btn-p:active { transform:translateY(0); }
+.setup-err { color:var(--red); font-size:13px; margin-top:10px; display:none; }
+
+/* ── APP ── */
+#app { display:none; max-width:1100px; margin:0 auto; padding-bottom:60px; }
+
+/* ── HEADER ── */
+.hdr {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky; top:0; z-index:100;
+  gap:12px; flex-wrap:wrap;
+  height: 60px;
+  box-shadow: var(--shadow);
+}
+.hl { display:flex; align-items:center; gap:14px; }
+.logo-wrap { width:34px; height:34px; background:linear-gradient(135deg,var(--planum),var(--planum-dark)); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; box-shadow: 0 4px 12px var(--planum-glow); }
+.at { font-size:16px; font-weight:800; letter-spacing:-0.4px; }
+.at span { color: var(--planum); }
+.as { font-size:11px; color:var(--muted); margin-top:1px; display:flex; align-items:center; gap:5px; }
+.sync-dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; flex-shrink:0; }
+.sync-dot.off { background:var(--red); animation:none; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
+.hr { display:flex; align-items:center; gap:8px; }
+.hbtn {
+  background:var(--planum-subtle);
+  border:1px solid var(--planum-glow);
+  border-radius:8px; color:var(--planum);
+  font-size:12px; font-weight:700;
+  padding:7px 14px; cursor:pointer;
+  font-family:var(--font); transition:all .2s;
+}
+.hbtn:hover { background:var(--planum-glow); }
+.theme-btn {
+  background:var(--bg3); border:1px solid var(--border2);
+  border-radius:8px; color:var(--muted);
+  font-size:16px; width:34px; height:34px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:all .2s; flex-shrink:0;
+}
+.theme-btn:hover { border-color:var(--planum); color:var(--planum); }
+.mnav-wrap { display:flex; align-items:center; gap:6px; }
+.mnav { background:var(--bg3); border:1px solid var(--border2); border-radius:7px; color:var(--muted); font-size:15px; padding:4px 10px; cursor:pointer; transition:all .2s; }
+.mnav:hover { border-color:var(--planum); color:var(--planum); }
+.mlabel { font-size:13px; font-weight:700; min-width:72px; text-align:center; color:var(--text); }
+
+/* ── TEAM BAR ── */
+.team-bar { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 24px; display:flex; }
+.ttab { flex:1; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--muted); font-size:13px; font-weight:700; padding:12px 8px; cursor:pointer; font-family:var(--font); text-align:center; transition:all .2s; }
+.ttab.g.active { color:var(--text); border-bottom-color:var(--text2); }
+.ttab.c.active { color:var(--com); border-bottom-color:var(--com); }
+.ttab.j.active { color:var(--jur); border-bottom-color:var(--jur); }
+.tbadge { display:inline-block; font-size:10px; padding:2px 7px; border-radius:20px; margin-left:5px; font-weight:700; }
+.bg { background:var(--bg4); color:var(--muted); }
+.bc { background:#4E9EE820; color:var(--com); }
+.bj { background:#A16BB220; color:var(--jur); }
+
+/* ── PERIOD BAR ── */
+.period-bar { background:var(--bg); border-bottom:1px solid var(--border); padding:10px 24px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.pmodes { display:flex; gap:4px; background:var(--bg3); border-radius:9px; padding:3px; }
+.pbtn { background:transparent; border:none; border-radius:7px; color:var(--muted); font-size:12px; padding:5px 14px; cursor:pointer; font-family:var(--font); font-weight:600; transition:all .2s; }
+.pbtn.active { background:var(--bg2); color:var(--planum); box-shadow: var(--shadow); }
+.pinput { background:var(--bg2); border:1px solid var(--border2); border-radius:8px; color:var(--text); font-size:12px; padding:6px 10px; outline:none; font-family:var(--mono); transition:border-color .2s; }
+.pinput:focus { border-color:var(--planum); }
+
+/* ── TABS ── */
+.tabs { display:flex; border-bottom:1px solid var(--border); overflow-x:auto; background:var(--bg2); padding:0 24px; }
+.tab { background:transparent; border:none; border-bottom:2px solid transparent; color:var(--muted); font-size:12px; font-weight:700; padding:13px 16px; cursor:pointer; font-family:var(--font); white-space:nowrap; transition:all .2s; letter-spacing:.3px; }
+.tab.active { color:var(--planum); border-bottom-color:var(--planum); }
+
+/* ── MAIN ── */
+.main { padding:20px 24px; }
+
+/* ── CARDS ── */
+.card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:14px; box-shadow:var(--shadow); transition:background .3s; }
+.ct { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:1.5px; color:var(--muted); margin-bottom:16px; display:block; }
+
+/* ── KPI GRID ── */
+.kgrid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:14px; }
+@media(min-width:640px){ .kgrid { grid-template-columns:repeat(4,1fr); } }
+.kcard {
+  background:var(--bg2); border:1px solid var(--border);
+  border-radius:var(--radius); padding:18px 20px;
+  border-left:3px solid var(--planum);
+  box-shadow: var(--shadow);
+  position:relative; overflow:hidden;
+  transition: transform .2s, box-shadow .2s;
+}
+.kcard:hover { transform:translateY(-2px); box-shadow:var(--shadow2); }
+.kcard::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; background:var(--accent-glow,var(--planum-subtle)); transform:translate(30%,-30%); }
+.kl { font-size:10px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted); margin-bottom:8px; font-weight:700; }
+.kv { font-size:22px; font-weight:800; font-family:var(--mono); line-height:1; }
+.ks { font-size:11px; color:var(--muted); margin-top:6px; }
+
+/* ── TEAM OVERVIEW ── */
+.tov-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+@media(max-width:500px){ .tov-grid { grid-template-columns:1fr; } }
+.tov-card { background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow); }
+.tov-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.tov-name { font-size:13px; font-weight:800; letter-spacing:.3px; }
+.tov-pct { font-size:24px; font-weight:800; font-family:var(--mono); }
+.tov-meta { font-size:11px; color:var(--muted); margin-top:6px; }
+
+/* ── PROGRESS ── */
+.ptrack { background:var(--bg4); border-radius:999px; overflow:hidden; position:relative; }
+.pfill { height:100%; border-radius:999px; transition:width .9s cubic-bezier(.4,0,.2,1); position:relative; }
+.pextra { position:absolute; right:8px; top:50%; transform:translateY(-50%); font-size:10px; color:#fff; font-weight:800; }
+
+/* ── SELLER ROW ── */
+.srow { margin-bottom:16px; }
+.smeta { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; }
+.sname { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; }
+.dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.sval { font-size:14px; font-weight:800; font-family:var(--mono); }
+.spct { font-size:11px; color:var(--muted); margin-left:6px; }
+
+/* ── RANK ── */
+.ri { border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:10px; transition:all .2s; }
+.ri:hover { border-color:var(--border3); transform:translateX(2px); }
+.rinner { display:flex; align-items:center; gap:14px; }
+.medal { font-size:24px; min-width:36px; text-align:center; }
+.rbody { flex:1; min-width:0; }
+.rnr { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:7px; }
+.rname { font-size:15px; font-weight:700; }
+.ramt { font-size:17px; font-weight:800; font-family:var(--mono); }
+.rfoot { display:flex; justify-content:space-between; margin-top:6px; }
+.rfoot span { font-size:11px; color:var(--muted); }
+.tpill { display:inline-block; font-size:10px; padding:2px 8px; border-radius:20px; font-weight:700; margin-left:6px; vertical-align:middle; }
+.pc { background:#4E9EE820; color:var(--com); }
+.pj { background:#A16BB220; color:var(--jur); }
+
+/* ── DIST BAR ── */
+.dist-bar { display:flex; border-radius:999px; overflow:hidden; height:10px; margin-bottom:14px; }
+.dleg { display:flex; flex-wrap:wrap; gap:12px; }
+.dli { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--muted); }
+.ddot { width:8px; height:8px; border-radius:2px; }
+
+/* ── DAILY CHART ── */
+.dchart { display:flex; align-items:flex-end; gap:4px; height:90px; overflow-x:auto; padding-bottom:4px; }
+.dcol { display:flex; flex-direction:column; align-items:center; min-width:20px; flex:1; }
+.dbw { width:100%; position:relative; height:68px; }
+.db { position:absolute; bottom:0; width:100%; border-radius:4px 4px 0 0; transition:height .6s ease; }
+.dtl { position:absolute; width:100%; height:1px; background:var(--red); opacity:.3; }
+.dlbl { font-size:9px; color:var(--muted); margin-top:3px; font-family:var(--mono); }
+.cleg { display:flex; gap:16px; margin-top:12px; flex-wrap:wrap; }
+.cli { display:flex; align-items:center; gap:5px; font-size:11px; color:var(--muted); }
+.cldot { width:8px; height:8px; border-radius:2px; }
+
+/* ── FORM ── */
+.fg { margin-bottom:16px; }
+.flbl { display:block; font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); margin-bottom:6px; font-weight:700; }
+.finp { width:100%; background:var(--bg3); border:1px solid var(--border2); border-radius:10px; color:var(--text); font-size:14px; padding:11px 14px; outline:none; font-family:var(--mono); transition:all .2s; }
+.finp:focus { border-color:var(--planum); box-shadow:0 0 0 3px var(--planum-glow); }
+select.finp { font-family:var(--font); }
+.bfull { width:100%; background:linear-gradient(135deg,var(--planum),var(--planum-dark)); border:none; border-radius:10px; color:#fff; font-size:14px; font-weight:700; padding:13px; cursor:pointer; font-family:var(--font); margin-top:8px; transition:all .2s; letter-spacing:.3px; }
+.bfull:hover { opacity:.9; transform:translateY(-1px); }
+.bghost { background:transparent; border:1px solid var(--border2); border-radius:8px; color:var(--muted); font-size:13px; font-weight:600; padding:9px 16px; cursor:pointer; font-family:var(--font); transition:all .2s; }
+.bghost:hover { border-color:var(--border3); color:var(--text); }
+.bdanger { background:var(--red)10; border:1px solid var(--red)30; border-radius:6px; color:var(--red); font-size:18px; line-height:1; padding:3px 10px; cursor:pointer; }
+.dsr { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); align-items:center; }
+.dsn { display:flex; align-items:center; gap:8px; font-size:13px; }
+.dsv { font-size:13px; font-weight:700; font-family:var(--mono); }
+.ssr { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+.ssn { display:flex; align-items:center; gap:10px; color:var(--text); font-size:13px; }
+
+/* ── DIVIDER ── */
+.divider { height:1px; background:var(--border); margin:16px 0; }
+
+/* ── LOADING / TOAST ── */
+#loading { position:fixed; inset:0; background:var(--bg); display:flex; align-items:center; justify-content:center; z-index:200; flex-direction:column; gap:16px; }
+.ll { width:40px; height:40px; border:3px solid var(--border2); border-top-color:var(--planum); border-radius:50%; animation:spin 1s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+.lt { color:var(--muted); font-size:14px; font-weight:500; }
+.toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); padding:11px 24px; border-radius:999px; font-weight:700; font-size:13px; color:#fff; z-index:300; pointer-events:none; opacity:0; transition:opacity .3s; white-space:nowrap; box-shadow:var(--shadow2); }
+.toast.show { opacity:1; }
+
+/* ── META MODAL ── */
+.modal-overlay { position:fixed; inset:0; background:#00000088; backdrop-filter:blur(4px); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; }
+.modal-card { background:var(--bg2); border:1px solid var(--border2); border-radius:20px; padding:28px; max-width:420px; width:100%; box-shadow:var(--shadow2); }
+.modal-title { font-size:18px; font-weight:800; margin-bottom:4px; letter-spacing:-.3px; }
+.modal-sub { font-size:12px; color:var(--muted); margin-bottom:22px; line-height:1.6; }
+.meta-section { margin-bottom:16px; }
+.meta-label { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; display:flex; align-items:center; gap:8px; }
+.meta-badge { font-size:10px; padding:3px 10px; border-radius:20px; font-weight:700; }
+
+/* ── GESTÃO ── */
+.gv-day-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+.gv-date { font-size:14px; font-weight:800; }
+.gv-day-name { font-size:11px; color:var(--muted); margin-left:8px; font-weight:500; }
+.gv-total { font-size:15px; font-weight:800; font-family:var(--mono); color:var(--planum); }
+.gv-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+.gv-actions { display:flex; align-items:center; gap:6px; }
+.btn-edit { background:var(--yellow)15; border:1px solid var(--yellow)40; border-radius:6px; color:var(--yellow); font-size:11px; padding:4px 10px; cursor:pointer; font-family:var(--font); font-weight:600; transition:all .2s; }
+.btn-edit:hover { background:var(--yellow)25; }
+.btn-zero { background:var(--red)10; border:1px solid var(--red)30; border-radius:6px; color:var(--red); font-size:11px; padding:4px 10px; cursor:pointer; font-family:var(--font); font-weight:600; transition:all .2s; }
+.btn-zero:hover { background:var(--red)20; }
+.btn-zero-day { background:transparent; border:1px solid var(--border2); border-radius:6px; color:var(--muted); font-size:11px; padding:4px 10px; cursor:pointer; font-family:var(--font); font-weight:600; transition:all .2s; }
+.btn-zero-day:hover { border-color:var(--red); color:var(--red); }
+
+/* ── SUMMARY BANNER ── */
+.summary-banner { background:linear-gradient(135deg,var(--planum-subtle),transparent); border:1px solid var(--planum-glow); border-radius:var(--radius); padding:16px 20px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; }
+.sb-label { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); font-weight:700; }
+.sb-value { font-size:22px; font-weight:800; font-family:var(--mono); color:var(--planum); }
+
+@media(max-width:600px){
+  .hdr { padding:0 16px; }
+  .team-bar,.period-bar,.tabs,.main { padding-left:16px; padding-right:16px; }
+  .tov-grid { grid-template-columns:1fr; }
+}
 </style>
 </head>
 <body>
 
-<div id="loading"><div class="ll">⚡</div><div class="lt">Conectando...</div></div>
+<div id="loading"><div class="ll"></div><div class="lt">Conectando...</div></div>
 
 <div id="setup-screen" style="display:none">
 <div class="setup-card">
-  <div class="setup-logo">⚡</div>
-  <div class="setup-title">Sales Command</div>
-  <div class="setup-sub">Configure o Supabase para sincronizar dados entre todos os dispositivos em tempo real.</div>
+  <div class="setup-brand">
+    <div style="width:40px;height:40px;background:linear-gradient(135deg,#A16BB2,#7A4F89);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">⚡</div>
+    <div class="setup-brand-name"><span>Planum</span> Solution</div>
+  </div>
+  <div class="setup-sub">Configure o Supabase para sincronizar dados em tempo real entre todos os dispositivos.</div>
   <div class="step"><div class="step-n">1</div><div class="step-b"><div class="step-t">Crie conta gratuita em supabase.com → New Project</div></div></div>
   <div class="step"><div class="step-n">2</div><div class="step-b"><div class="step-t">SQL Editor → cole e execute:</div>
   <div class="step-code">create table sellers (
-  id text primary key,
-  name text not null,
-  color text not null,
-  team text not null default 'comercial',
+  id text primary key, name text not null,
+  color text not null, team text not null default 'comercial',
   created_at timestamptz default now()
 );
 create table sales (
   id text primary key,
   seller_id text references sellers(id) on delete cascade,
-  date text not null,
-  amount numeric not null,
-  updated_at timestamptz default now(),
-  unique(seller_id, date)
+  date text not null, amount numeric not null,
+  updated_at timestamptz default now(), unique(seller_id, date)
 );
-create table settings (
-  key text primary key,
-  value text not null
-);
+create table settings (key text primary key, value text not null);
 alter table sellers enable row level security;
 alter table sales enable row level security;
 alter table settings enable row level security;
 create policy "pub sellers" on sellers for all to anon using (true) with check (true);
 create policy "pub sales" on sales for all to anon using (true) with check (true);
 create policy "pub settings" on settings for all to anon using (true) with check (true);</div></div></div>
-  <div class="step"><div class="step-n">3</div><div class="step-b"><div class="step-t">Settings → API → copie a URL e a chave "anon public"</div></div></div>
-  <div style="background:#ffd16615;border:1px solid #ffd16644;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;color:#ffd166;">
-    <strong>⚠️ Já tem o banco criado?</strong> Execute este SQL no Supabase para corrigir permissões:<br><br>
-    <code style="font-size:10px;color:#a5f3b4">drop policy if exists "pub sellers" on sellers;<br>
-drop policy if exists "pub sales" on sales;<br>
-drop policy if exists "pub settings" on settings;<br>
-create policy "pub sellers" on sellers for all to anon using (true) with check (true);<br>
-create policy "pub sales" on sales for all to anon using (true) with check (true);<br>
-create policy "pub settings" on settings for all to anon using (true) with check (true);</code>
-  </div>
+  <div class="step"><div class="step-n">3</div><div class="step-b"><div class="step-t">Settings → API Keys → aba "Legacy" → copie URL e chave anon</div></div></div>
   <div class="fi"><label class="fl">Supabase URL</label><input class="finput" id="su" type="text" placeholder="https://xxxx.supabase.co"></div>
   <div class="fi"><label class="fl">Anon Key</label><input class="finput" id="sk" type="text" placeholder="eyJhbGci..."></div>
   <button class="btn-p" onclick="saveSetup()">Conectar →</button>
@@ -183,9 +341,16 @@ create policy "pub settings" on settings for all to anon using (true) with check
 
 <div id="app">
   <header class="hdr">
-    <div class="hl"><div class="logo">⚡</div><div><div class="at">Sales Command</div><div class="as"><span class="sync-dot" id="sdot"></span><span id="slbl">Conectado</span></div></div></div>
+    <div class="hl">
+      <div class="logo-wrap">⚡</div>
+      <div>
+        <div class="at" id="app-title">Planum <span>Solution</span></div>
+        <div class="as"><span class="sync-dot" id="sdot"></span><span id="slbl">Conectado</span></div>
+      </div>
+    </div>
     <div class="hr">
       <button class="hbtn" onclick="openMetaModal()">🎯 Metas</button>
+      <button class="theme-btn" onclick="toggleTheme()" title="Alternar tema">🌙</button>
       <div class="mnav-wrap">
         <button class="mnav" onclick="changeMonth(-1)">‹</button>
         <div class="mlabel" id="mlbl"></div>
@@ -214,6 +379,7 @@ create policy "pub settings" on settings for all to anon using (true) with check
     <button class="tab active" onclick="setTab('ov',this)">📊 Visão Geral</button>
     <button class="tab" onclick="setTab('rk',this)">🏆 Ranking</button>
     <button class="tab" onclick="setTab('in',this)">➕ Lançar</button>
+    <button class="tab" onclick="setTab('gv',this)">📋 Gestão</button>
     <button class="tab" onclick="setTab('cf',this)">⚙️ Config</button>
   </nav>
   <div class="main" id="mc"></div>
@@ -221,29 +387,41 @@ create policy "pub settings" on settings for all to anon using (true) with check
 
 <div class="toast" id="toast"></div>
 
-<div id="mm" style="display:none;position:fixed;inset:0;background:#000000bb;z-index:200;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:16px;padding:28px;max-width:420px;width:100%">
-    <div style="font-size:16px;font-weight:800;margin-bottom:4px">🎯 Metas do Mês</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:20px">Defina metas por equipe. A meta global aparece na visão Geral — se deixar em 0, soma as equipes automaticamente.</div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span style="background:#ffffff15;border-radius:6px;padding:2px 8px;font-size:11px;color:#aaa">GLOBAL</span>Meta Total da Empresa</label>
-      <input class="finput" id="mg" type="number" placeholder="Ex: 200000 (ou 0 para somar equipes)">
-      </div>
-    <div style="height:1px;background:var(--border);margin:14px 0"></div>
-    <div style="margin-bottom:14px">
-      <label style="font-size:11px;color:var(--com);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span style="background:#4f8aff20;border-radius:6px;padding:2px 8px;font-size:11px">💼 COMERCIAL</span>Meta Comercial</label>
-      <input class="finput" id="mc2" type="number" placeholder="Ex: 120000">
+<div id="mm" style="display:none;position:fixed;inset:0;background:#00000088;backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:20px">
+  <div class="modal-card">
+    <div class="modal-title">🎯 Metas do Mês</div>
+    <div class="modal-sub">Defina metas por equipe. Meta global = 0 soma as equipes automaticamente.</div>
+    <div class="meta-section">
+      <div class="meta-label"><span class="meta-badge" style="background:#ffffff15;color:var(--muted)">GLOBAL</span> Meta Total da Empresa</div>
+      <input class="finp" id="mg" type="number" placeholder="Ex: 200000">
     </div>
-    <div style="margin-bottom:20px">
-      <label style="font-size:11px;color:var(--jur);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:6px"><span style="background:#b06aff20;border-radius:6px;padding:2px 8px;font-size:11px">⚖️ JURÍDICO</span>Meta Jurídico</label>
-      <input class="finput" id="mj" type="number" placeholder="Ex: 80000">
+    <div class="divider"></div>
+    <div class="meta-section">
+      <div class="meta-label"><span class="meta-badge" style="background:#4E9EE820;color:var(--com)">💼 COMERCIAL</span> Meta Comercial</div>
+      <input class="finp" id="mc2" type="number" placeholder="Ex: 120000">
     </div>
-    <div style="display:flex;gap:8px"><button class="bfull" style="margin-top:0" onclick="saveMetas()">Salvar Metas</button><button class="bghost" onclick="closeMM()">Cancelar</button></div>
+    <div class="meta-section" style="margin-bottom:20px">
+      <div class="meta-label"><span class="meta-badge" style="background:#A16BB220;color:var(--jur)">⚖️ JURÍDICO</span> Meta Jurídico</div>
+      <input class="finp" id="mj" type="number" placeholder="Ex: 80000">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="bfull" style="margin-top:0" onclick="saveMetas()">Salvar Metas</button>
+      <button class="bghost" onclick="closeMM()">Cancelar</button>
+    </div>
   </div>
 </div>
 
 <script>
 let SU='',SK='';
+function toggleTheme(){
+  const h=document.documentElement;
+  const isDark=h.getAttribute('data-theme')==='dark';
+  h.setAttribute('data-theme',isDark?'light':'dark');
+  document.querySelector('.theme-btn').textContent=isDark?'🌙':'☀️';
+  localStorage.setItem('sc_theme',isDark?'light':'dark');
+}
+// Apply saved theme
+(function(){const t=localStorage.getItem('sc_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
 function todayBR(){const n=new Date();const br=new Date(n.getTime()-3*60*60*1000);return br.toISOString().split('T')[0];}
 let S={metas:{global:0,comercial:0,juridico:0},month:new Date().getMonth()+1,year:new Date().getFullYear(),sellers:[],sales:{}};
 let tab='ov',tv='geral',pm='month',sd=todayBR(),sw=null,rs='',re='';
@@ -326,6 +504,7 @@ async function load(){
   S.sellers=se;S.sales={};
   sa.forEach(s=>{if(!S.sales[s.date])S.sales[s.date]={};S.sales[s.date][s.seller_id]=parseFloat(s.amount);});
   st.forEach(s=>{
+    if(s.key==='app_name')S.appName=s.value;
     if(s.key==='meta_global')S.metas.global=parseFloat(s.value)||0;
     if(s.key==='meta_comercial')S.metas.comercial=parseFloat(s.value)||0;
     if(s.key==='meta_juridico')S.metas.juridico=parseFloat(s.value)||0;
@@ -372,6 +551,7 @@ function getPD(){
 }
 
 function renderAll(){
+  updateAppTitle();
   document.getElementById('mlbl').textContent=MN[S.month-1]+' '+S.year;
   const c=S.sellers.filter(s=>s.team==='comercial').length;
   const j=S.sellers.filter(s=>s.team==='juridico').length;
@@ -395,6 +575,7 @@ function renderMC(){
   if(tab==='ov')e.innerHTML=renderOV();
   else if(tab==='rk')e.innerHTML=renderRK();
   else if(tab==='in')e.innerHTML=renderIN();
+  else if(tab==='gv')e.innerHTML=renderGV();
   else e.innerHTML=renderCF();
 }
 
@@ -559,9 +740,17 @@ async function submitSale(){
 function renderCF(){
   const cs=S.sellers.filter(s=>s.team==='comercial');
   const js=S.sellers.filter(s=>s.team==='juridico');
+  const appName=S.appName||'Sales Command';
   const mkR=(list,t)=>list.map(s=>`<div class="ssr"><div class="ssn"><div class="dot" style="background:${s.color}"></div>${s.name}<span class="tpill ${t==='comercial'?'pc':'pj'}">${t==='comercial'?'Comercial':'Jurídico'}</span></div><button class="bdanger" onclick="removeSeller('${s.id}')">×</button></div>`).join('')
     ||`<div style="color:var(--muted);font-size:12px;padding:6px 0">Nenhum vendedor.</div>`;
-  return`<div class="card"><div class="ct">Adicionar Vendedor</div>
+  return`<div class="card">
+    <div class="ct">Nome do Dashboard</div>
+    <div class="fg"><label class="flbl">Nome que aparece no topo</label>
+      <input class="finp" id="app-name-input" type="text" placeholder="Ex: Ecom Energia · Vendas" value="${appName}">
+    </div>
+    <button class="bfull" style="margin-top:0" onclick="saveAppName()">💾 Salvar Nome</button>
+  </div>
+  <div class="card"><div class="ct">Adicionar Vendedor</div>
     <div class="fg"><label class="flbl">Nome</label><input class="finp" id="ns" type="text" placeholder="Nome do vendedor" onkeydown="if(event.key==='Enter')addSeller()"></div>
     <div class="fg"><label class="flbl">Equipe</label><select class="finp" id="nt"><option value="comercial">💼 Comercial</option><option value="juridico">⚖️ Jurídico</option></select></div>
     <button class="bfull" style="margin-top:0" onclick="addSeller()">+ Adicionar Vendedor</button>
@@ -604,6 +793,114 @@ async function deleteSale(sid,dt){
     if(S.sales[dt])delete S.sales[dt][sid];
     toast('Venda zerada!');renderAll();
   }catch(e){toast('Erro: '+e.message,'e');}
+}
+
+// ── GESTÃO DE VENDAS ──────────────────────────────────────────────────────────
+function renderGV(){
+  // Group all sales by date, sorted desc
+  const allDates = Object.keys(S.sales).filter(d=>{
+    return Object.values(S.sales[d]).some(v=>v>0);
+  }).sort((a,b)=>b.localeCompare(a));
+
+  if(allDates.length===0){
+    return`<div class="card"><div style="color:var(--muted);text-align:center;padding:32px 0;font-size:14px">Nenhuma venda registrada ainda.</div></div>`;
+  }
+
+  const rows = allDates.map(d=>{
+    const sellers = Object.entries(S.sales[d])
+      .filter(([sid,v])=>v>0)
+      .map(([sid,v])=>{
+        const seller = S.sellers.find(s=>s.id===sid);
+        if(!seller) return '';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ffffff08">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px">
+            <div class="dot" style="background:${seller.color}"></div>
+            <span>${seller.name}</span>
+            <span class="tpill ${seller.team==='comercial'?'pc':'pj'}" style="font-size:9px;padding:1px 5px">${seller.team==='comercial'?'COM':'JUR'}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="color:${seller.color};font-family:monospace;font-weight:700;font-size:13px">${fmtR(v)}</span>
+            <button onclick="editSale('${sid}','${d}',${v})" style="background:#ffd16615;border:1px solid #ffd16644;border-radius:6px;color:#ffd166;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">✏️ Editar</button>
+            <button onclick="deleteSaleGV('${sid}','${d}')" style="background:#ff6b6b15;border:1px solid #ff6b6b44;border-radius:6px;color:#ff6b6b;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑️ Zerar</button>
+          </div>
+        </div>`;
+      }).join('');
+
+    const dayTotal = Object.entries(S.sales[d]).reduce((a,[,v])=>a+v,0);
+    const dt = fromISO(d);
+    const weekdays = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const dayName = weekdays[dt.getDay()];
+    const dateLabel = d.split('-').reverse().join('/');
+
+    return `<div class="card" style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div>
+          <span style="font-size:13px;font-weight:800;color:#e8e8f0">${dateLabel}</span>
+          <span style="font-size:11px;color:var(--muted);margin-left:8px">${dayName}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:14px;font-weight:800;color:#4f8aff;font-family:monospace">${fmtR(dayTotal)}</span>
+          <button onclick="deleteDay('${d}')" style="background:#ff6b6b10;border:1px solid #ff6b6b33;border-radius:6px;color:#ff6b6b;font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑️ Zerar dia</button>
+        </div>
+      </div>
+      ${sellers}
+    </div>`;
+  }).join('');
+
+  const grandTotal = allDates.reduce((a,d)=>a+Object.values(S.sales[d]).reduce((b,v)=>b+v,0),0);
+
+  return `<div class="card" style="margin-bottom:10px;background:linear-gradient(135deg,#4f8aff15,#4f8aff05);border-color:#4f8aff33">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:var(--muted)">Total Registrado no Mês</span>
+      <span style="font-size:20px;font-weight:800;color:#4f8aff;font-family:monospace">${fmtR(grandTotal)}</span>
+    </div>
+  </div>
+  ${rows}`;
+}
+
+async function saveAppName(){
+  const name=document.getElementById('app-name-input')?.value.trim();
+  if(!name)return;
+  try{
+    await sb('settings',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({key:'app_name',value:name})});
+    S.appName=name;updateAppTitle();toast('Nome atualizado!');
+  }catch(e){toast('Erro: '+e.message,'e');}
+}
+
+async function deleteSaleGV(sid,dt){
+  const seller=S.sellers.find(s=>s.id===sid);
+  const dateLabel=dt.split('-').reverse().join('/');
+  if(!confirm('Zerar venda de '+seller.name+' em '+dateLabel+'?'))return;
+  try{
+    await sb('sales?seller_id=eq.'+sid+'&date=eq.'+dt,{method:'DELETE'});
+    if(S.sales[dt])delete S.sales[dt][sid];
+    toast('Venda zerada!');renderAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
+}
+
+async function deleteDay(dt){
+  const dateLabel=dt.split('-').reverse().join('/');
+  if(!confirm('Zerar TODAS as vendas de '+dateLabel+'? Isso não pode ser desfeito.'))return;
+  try{
+    const sellers=Object.keys(S.sales[dt]||{});
+    await Promise.all(sellers.map(sid=>sb('sales?seller_id=eq.'+sid+'&date=eq.'+dt,{method:'DELETE'})));
+    delete S.sales[dt];
+    toast('Todas as vendas de '+dateLabel+' zeradas!');renderAll();
+  }catch(e){toast('Erro: '+e.message,'e');}
+}
+
+// ── APP NAME ──────────────────────────────────────────────────────────────────
+function updateAppTitle(){
+  const t=S.appName||'';
+  const el=document.getElementById('app-title');
+  if(el){
+    if(t&&t!=='Sales Command'&&t!=='Planum Solution'){
+      el.innerHTML=t;
+    } else {
+      el.innerHTML='Planum <span style="color:var(--planum)">Solution</span>';
+    }
+  }
+  document.title=(t||'Planum Solution')+' · Dashboard';
 }
 
 async function addSeller(){
