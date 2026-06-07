@@ -228,7 +228,7 @@ select.finp{font-family:var(--font)}
 <div id="setup-screen" style="display:none">
 <div class="setup-card">
   <div class="setup-brand">
-    <div class="setup-logo"><svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.5"><polygon points="8,2 14,5.5 14,10.5 8,14 2,10.5 2,5.5"/></svg></div>
+    <div class="setup-logo"><svg viewBox="0 0 16 16" fill="white"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></div>
     <div><div class="setup-name">Planum <em>Solution</em></div></div>
   </div>
   <div class="setup-sub" style="margin-top:10px">Configure o Supabase para sincronizar dados em tempo real entre todos os dispositivos.</div>
@@ -264,7 +264,7 @@ create policy "pub settings" on settings for all to anon using (true) with check
 <div id="app">
   <header class="hdr">
     <div class="hl">
-      <div class="logo-w"><svg viewBox="0 0 16 16" fill="none" stroke="white" stroke-width="1.5"><polygon points="8,2 14,5.5 14,10.5 8,14 2,10.5 2,5.5"/></svg></div>
+      <div class="logo-w"><svg viewBox="0 0 16 16" fill="white"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg></div>
       <div>
         <div class="at" id="app-title">Planum <em>Solution</em></div>
         <div class="as"><span class="sdot" id="sdot"></span><span id="slbl">Conectado</span></div>
@@ -350,11 +350,11 @@ function toggleTheme(){
 }
 // Apply saved theme
 (function(){const t=localStorage.getItem('sc_theme')||'dark';document.documentElement.setAttribute('data-theme',t);})();
-function todayBR(){const n=new Date();const br=new Date(n.getTime()-3*60*60*1000);return br.toISOString().split('T')[0];}
+function todayBR(){return new Date().toLocaleDateString('en-CA',{timeZone:'America/Sao_Paulo'});}
 let S={metas:{global:0,comercial:0,juridico:0},month:new Date().getMonth()+1,year:new Date().getFullYear(),sellers:[],sales:{}};
-let tab='ov',tv='geral',pm='month',sd=todayBR(),sw=null,rs='',re='';
+let tab='ov',tv='geral',pm='month',sd=todayBR(),inSellerId='',inLaunchDate='',sw=null,rs='',re='';
 const MN=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-const CL=['#4f8aff','#ff6b6b','#3ddc84','#ffd166','#b06aff','#ff8c42','#4ecdc4','#ff69b4','#a3e635','#fb923c'];
+const CL=['#A16BB2','#7A9EC8','#C49AD0','#9EB87A','#C4A87A','#7AB8B8','#B87A9E','#8A9EC4','#B89E7A','#7AB89E'];
 const TC={comercial:'#4f8aff',juridico:'#b06aff'};
 
 let _supa=null;
@@ -507,9 +507,9 @@ function renderMC(){
   else e.innerHTML=renderCF();
 }
 
-function pb(p,color,h=18){
-  const ex=p>100?`<span class="pextra">+${p-100}%!</span>`:'';
-  return `<div class="ptrack" style="height:${h}px"><div class="pfill" style="width:${Math.min(p,100)}%;background:${color}${h>10?';box-shadow:0 0 10px '+color+'44':''}">${ex}</div></div>`;
+function pb(p,color,h=6){
+  const ex=p>100?'<span style="position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:#fff;font-weight:700">+'+String(p-100)+'%</span>':'';
+  return '<div style="background:var(--s3);border-radius:999px;height:'+h+'px;overflow:hidden;position:relative;width:100%"><div style="height:100%;width:'+Math.min(p,100)+'%;background:'+color+';border-radius:999px;transition:width .9s cubic-bezier(.4,0,.2,1)">'+ex+'</div></div>';
 }
 
 function getStats(sellers,pDays,periodMeta){
@@ -527,7 +527,7 @@ function renderOV(){
   const stats=getStats(ts,pd,pt);const tot=stats.reduce((a,s)=>a+s.total,0);
   const op=pct(tot,pt);const rem=Math.max(pt-tot,0);
   const sc=op>=100?'var(--green)':op>=80?'var(--yellow)':op>=50?'var(--accent)':'var(--red)';
-  const sl=op>=100?'🎯 Meta batida!':op>=80?'🔥 Quase lá!':op>=50?'📈 Em progresso':'⚠️ Atenção';
+  const sl=op>=100?'Meta atingida':op>=80?'Quase lá':op>=50?'Em progresso':'Atenção';
   const tc=TC[tv];
   const kpis=`<div class="kgrid">
     <div class="kcard" style="border-top-color:${tc}"><div class="kl">Total Vendido</div><div class="kv" style="color:${tc}">${fmtR(tot)}</div><div class="ks">de ${fmtR(pt)}</div></div>
@@ -559,17 +559,17 @@ function renderGeralOV(pd,bd){
   const sc=op>=100?'var(--green)':op>=80?'var(--yellow)':op>=50?'var(--accent)':'var(--red)';
   const kpis=`<div class="kgrid">
     <div class="kcard" style="border-top-color:var(--accent)"><div class="kl">Total Empresa</div><div class="kv" style="color:var(--accent)">${fmtR(totAll)}</div><div class="ks">de ${fmtR(pg)}</div></div>
-    <div class="kcard" style="border-top-color:${sc}"><div class="kl">% Meta Global</div><div class="kv" style="color:${sc}">${op}%</div><div class="ks">${op>=100?'🎯 Batida!':op>=80?'🔥 Quase!':'📈 Em progresso'}</div></div>
+    <div class="kcard" style="border-top-color:${sc}"><div class="kl">% Meta Global</div><div class="kv" style="color:${sc}">${op}%</div><div class="ks">${op>=100?'Meta atingida':op>=80?'Quase lá':'Em progresso'}</div></div>
     <div class="kcard" style="border-top-color:var(--orange)"><div class="kl">Faltando</div><div class="kv" style="color:var(--orange)">${fmtR(rem)}</div><div class="ks">meta global</div></div>
     <div class="kcard" style="border-top-color:var(--purple)"><div class="kl">Vendedores</div><div class="kv" style="color:var(--purple)">${S.sellers.length}</div><div class="ks">${td.comercial.sellers.length} com · ${td.juridico.sellers.length} jur</div></div>
   </div>`;
   const gp=`<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div class="ct" style="margin-bottom:0">Progresso Global</div><div style="color:${sc};font-weight:800;font-size:18px;font-family:'DM Mono',monospace">${op}%</div></div>
   ${pb(op,sc)}<div style="display:flex;justify-content:space-between;margin-top:8px;color:var(--muted);font-size:11px;font-family:'DM Mono',monospace"><span>R$ 0</span><span>${fmtR(totAll)}</span><span>${fmtR(pg)}</span></div></div>`;
   const tc=`<div class="tov-grid">${['comercial','juridico'].map(t=>{
-    const d=td[t];const tco=TC[t];const lbl=t==='comercial'?'💼 Comercial':'⚖️ Jurídico';
+    const d=td[t];const tco=TC[t];const lbl=t==='comercial'?'Comercial':'Jurídico';
     const sco=d.pct>=100?'var(--green)':d.pct>=80?'var(--yellow)':d.pct>=50?tco:'var(--red)';
-    return`<div class="tov-card" style="border-top:2px solid ${tco}">
-      <div class="tov-hdr"><div class="tov-name" style="color:${tco}">${lbl}</div><div class="tov-pct" style="color:${sco}">${d.pct}%</div></div>
+    return`<div class="tov-card" style="border-left:3px solid ${tco};border-top:none">
+      <div class="tov-hdr"><div class="tov-name" style="color:${tco};font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px">${lbl}</div><div class="tov-pct" style="color:${sco}">${d.pct}%</div></div>
       ${pb(d.pct,sco,10)}<div class="tov-meta">${fmtR(d.total)} de ${fmtR(d.periodMeta)}</div>
       <div style="margin-top:12px">${d.stats.slice(0,3).map(s=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px"><div style="display:flex;align-items:center;gap:6px"><div class="dot" style="background:${s.color}"></div>${s.name}</div><span style="color:${s.color};font-family:'DM Mono',monospace;font-weight:700">${fmtR(s.total)}</span></div>`).join('')}
       ${d.sellers.length>3?`<div style="font-size:11px;color:var(--muted);margin-top:8px;text-align:center">+${d.sellers.length-3} vendedores</div>`:''}
@@ -586,113 +586,158 @@ function renderDC(bd,dt,sellers){
   const mH=dt*1.5||1;
   const bars=bd.map(d=>{
     const ds=sellers.reduce((a,s)=>a+(S.sales[d]?.[s.id]||0),0);
-    const h=Math.min((ds/mH)*60,60);const tH=Math.min((dt/mH)*60,60);
-    const bg=ds>=dt&&ds>0?'var(--green)':ds>0?'var(--yellow)':'var(--bg4)';
-    return`<div class="dcol"><div class="dbw"><div class="db" style="height:${Math.max(h,ds>0?2:0)}px;background:${bg}"></div><div class="dtl" style="bottom:${tH}px"></div></div><div class="dlbl">${fromISO(d).getDate()}</div></div>`;
+    const h=Math.min((ds/mH)*58,58);
+    const tH=Math.min((dt/mH)*58,58);
+    const bg=ds>=dt&&ds>0?'#5A9E7A90':ds>0?'#A16BB270':'var(--s3)';
+    const day=fromISO(d).getDate();
+    return`<div class="dcol">
+      <div class="dbw">
+        <div class="db" style="height:${Math.max(h,ds>0?2:0)}px;background:${bg}"></div>
+        <div class="dtl" style="bottom:${tH}px"></div>
+      </div>
+      <div class="dlbl">${day}</div>
+    </div>`;
   }).join('');
-  return`<div class="card"><div class="ct">Vendas Diárias vs Meta</div><div class="dchart">${bars}</div><div class="cleg"><div class="cli"><div class="cldot" style="background:var(--green)"></div>Meta batida</div><div class="cli"><div class="cldot" style="background:var(--yellow)"></div>Abaixo</div><div class="cli"><div class="cldot" style="background:var(--red)"></div>Linha meta</div></div></div>`;
+  return`<div class="card">
+    <div class="ct">
+      <span>Vendas Diárias</span>
+      <div style="display:flex;gap:14px">
+        <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--t3);text-transform:none;letter-spacing:0;font-weight:400"><span style="width:7px;height:7px;background:#5A9E7A90;border-radius:2px;display:inline-block"></span>Acima da meta</span>
+        <span style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--t3);text-transform:none;letter-spacing:0;font-weight:400"><span style="width:7px;height:7px;background:#A16BB270;border-radius:2px;display:inline-block"></span>Abaixo da meta</span>
+      </div>
+    </div>
+    <div class="dchart">${bars}</div>
+  </div>`;
 }
+
 
 function renderRK(){
   const pd=getPD();const bd=getBD(S.year,S.month);
   const ts=teamSellers();const tm=teamMeta();
   const dt=tm&&bd.length?tm/bd.length:0;
-  const pbd2=pd.filter(d=>{const w=fromISO(d).getDay();return w!==0&&w!==6;});
-  const pt=pbd2.length*dt;
-  const stats=getStats(ts,pd,pt);const tot=stats.reduce((a,s)=>a+s.total,0);
+  const pbd=pd.filter(d=>{const w=fromISO(d).getDay();return w!==0&&w!==6;});
+  const pt=pbd.length*dt;
+  const stats=getStats(ts,pd,pt);
+  const tot=stats.reduce((a,s)=>a+s.total,0);
   const medals=['🥇','🥈','🥉'];
-  const topBg=['linear-gradient(135deg,#ffd16620,#ffd16608)','linear-gradient(135deg,#aaaaaa15,#aaaaaa05)','linear-gradient(135deg,#cd7f3215,#cd7f3205)'];
-  const topBd=['#ffd16644','#aaaaaa33','#cd7f3233'];
-  const sp=tv==='geral';
-  const items=stats.length?stats.map((s,i)=>`<div class="ri" style="${i<3?'background:'+topBg[i]+';border-color:'+topBd[i]:''}">
-    <div class="rinner"><div class="medal">${medals[i]||'#'+(i+1)}</div><div class="rbody">
-      <div class="rnr"><div class="rname">${s.name}${sp?`<span class="tpill ${s.team==='comercial'?'pc':'pj'}">${s.team==='comercial'?'COM':'JUR'}</span>`:''}</div><div class="ramt" style="color:${s.color}">${fmtR(s.total)}</div></div>
-      ${pb(s.pct,s.color,8)}<div class="rfoot"><span>${s.pct}% da meta</span>${tot?`<span>${Math.round((s.total/tot)*100)}% do total</span>`:''}</div>
-    </div></div></div>`).join(''):'<div style="color:var(--muted);text-align:center;padding:32px 0">Nenhum vendedor nesta visão.</div>';
-  const dist=tot>0?`<div class="card"><div class="ct">Participação nas Vendas</div>
-    <div class="dist-bar">${stats.filter(s=>s.total>0).map(s=>`<div style="width:${(s.total/tot)*100}%;background:${s.color};min-width:2px;transition:width .8s ease"></div>`).join('')}</div>
-    <div class="dleg">${stats.filter(s=>s.total>0).map(s=>`<div class="dli"><div class="ddot" style="background:${s.color}"></div>${s.name}: ${Math.round((s.total/tot)*100)}%</div>`).join('')}</div></div>`:'';
-  const lbl=tv==='geral'?'🏢 Empresa':tv==='comercial'?'💼 Comercial':'⚖️ Jurídico';
-  return`<div class="card"><div class="ct">🏆 Ranking — ${lbl}</div>${items}</div>${dist}`;
+  const lbl=tv==='geral'?'Empresa':tv==='comercial'?'Comercial':'Jurídico';
+  const showPill=tv==='geral';
+
+  const items=stats.length?stats.map((s,i)=>{
+    const isTop=i<3;
+    const rankNum=medals[i]||`<span style="font-size:12px;font-weight:700;color:var(--t3);font-family:var(--mono)">${String(i+1).padStart(2,'0')}</span>`;
+    const barColor=s.color;
+    const pctColor=s.pct>=100?'var(--gr)':s.pct>=70?'var(--pl)':'var(--t2)';
+    return`<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--bd)">
+      <div style="min-width:28px;text-align:center;font-size:${isTop?'20':'13'}px">${rankNum}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></div>
+            <span style="font-size:13px;font-weight:600">${s.name}</span>
+            ${showPill?`<span class="tpill ${s.team==='comercial'?'pc':'pj'}">${s.team==='comercial'?'COM':'JUR'}</span>`:''}
+          </div>
+          <div style="display:flex;align-items:baseline;gap:8px">
+            <span style="font-size:14px;font-weight:600;font-family:var(--mono);color:${s.color}">${fmtR(s.total)}</span>
+            <span style="font-size:11px;color:${pctColor};font-family:var(--mono);font-weight:500">${s.pct}%</span>
+          </div>
+        </div>
+        ${pb(s.pct,s.color,4)}
+        <div style="display:flex;justify-content:space-between;margin-top:5px">
+          <span style="font-size:10px;color:var(--t3)">${s.pct}% da meta individual</span>
+          ${tot>0?`<span style="font-size:10px;color:var(--t3)">${Math.round((s.total/tot)*100)}% do volume total</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join(''):'<div style="color:var(--t3);text-align:center;padding:32px 0;font-size:13px">Nenhum vendedor nesta visão.</div>';
+
+  const dist=tot>0?`<div class="card">
+    <div class="ct">Distribuição de Vendas — ${lbl}</div>
+    <div style="display:flex;border-radius:999px;overflow:hidden;height:6px;margin-bottom:12px">
+      ${stats.filter(s=>s.total>0).map(s=>`<div style="width:${(s.total/tot)*100}%;background:${s.color};min-width:2px;transition:width .8s ease"></div>`).join('')}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px">
+      ${stats.filter(s=>s.total>0).map(s=>`<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t2)"><div style="width:7px;height:7px;border-radius:2px;background:${s.color}"></div>${s.name}: ${Math.round((s.total/tot)*100)}%</div>`).join('')}
+    </div>
+  </div>`:'';
+
+  return`<div class="card">
+    <div class="ct"><span>Ranking · ${lbl}</span><span style="font-size:10px;color:var(--t3);letter-spacing:0;text-transform:none;font-weight:400">por volume realizado</span></div>
+    ${items}
+  </div>${dist}`;
 }
+
 
 function renderIN(){
-  const cs=S.sellers.filter(s=>s.team==='comercial');const js=S.sellers.filter(s=>s.team==='juridico');
-  const mo=arr=>arr.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-  const opts=(cs.length?`<optgroup label="💼 Comercial">${mo(cs)}</optgroup>`:'')+
-             (js.length?`<optgroup label="⚖️ Jurídico">${mo(js)}</optgroup>`:'');
-  const inDate=document.getElementById('id')?.value||sd;
-  const dd=inDate.split('-').reverse().join('/');
+  const cs=S.sellers.filter(s=>s.team==='comercial');
+  const js=S.sellers.filter(s=>s.team==='juridico');
+  const allS=[...cs,...js];
+  if(!inSellerId&&allS.length>0)inSellerId=allS[0].id;
+  const mo=arr=>arr.map(s=>`<option value="${s.id}" ${inSellerId===s.id?'selected':''}>${s.name}</option>`).join('');
+  const opts=(cs.length?`<optgroup label="Comercial">${mo(cs)}</optgroup>`:'')+
+             (js.length?`<optgroup label="Jurídico">${mo(js)}</optgroup>`:'');
+  const curDate=inLaunchDate||sd;
+  const dd=curDate.split('-').reverse().join('/');
+  const curSeller=S.sellers.find(s=>s.id===inSellerId);
+  const existingVal=inSellerId&&curDate?(S.sales[curDate]?.[inSellerId]||0):0;
   const rows=S.sellers.map(s=>{
-    const v=S.sales[inDate]?.[s.id];
+    const v=S.sales[curDate]?.[s.id];
     const editBtns=v?`
       <div style="display:flex;align-items:center;gap:6px">
-        <span style="color:${s.color};font-family:monospace;font-weight:700">${fmtR(v)}</span>
-        <button onclick="editSale('${s.id}','${inDate}',${v})" style="background:#ffd16615;border:1px solid #ffd16644;border-radius:6px;color:#ffd166;font-size:11px;padding:3px 8px;cursor:pointer">✏️ Editar</button>
-        <button onclick="deleteSale('${s.id}','${inDate}')" style="background:#ff6b6b15;border:1px solid #ff6b6b44;border-radius:6px;color:#ff6b6b;font-size:11px;padding:3px 8px;cursor:pointer">🗑️ Zerar</button>
+        <span style="color:${s.color};font-family:var(--mono);font-weight:500;font-size:12px">${fmtR(v)}</span>
+        <button onclick="editSale('${s.id}','${curDate}',${v})" class="btn-edit">Editar</button>
+        <button onclick="deleteSaleGV('${s.id}','${curDate}')" class="btn-zero">Zerar</button>
       </div>`
-      :`<span style="color:var(--muted)">—</span>`;
-    return`<div class="dsr"><div class="dsn"><div class="dot" style="background:${s.color}"></div>${s.name}<span class="tpill ${s.team==='comercial'?'pc':'pj'}" style="font-size:9px;padding:1px 5px">${s.team==='comercial'?'COM':'JUR'}</span></div>
-    <div>${editBtns}</div></div>`;
-  }).join('')||'<div style="color:var(--muted);font-size:13px">Nenhum vendedor.</div>';
-  return`<div class="card"><div class="ct">Registrar Venda</div>
-    <div class="fg"><label class="flbl">Vendedor</label><select class="finp" id="is">${opts}</select></div>
-    <div class="fg"><label class="flbl">Data</label><input type="date" class="finp" id="id" value="${sd}" onchange="renderMC()"></div>
+      :`<span style="color:var(--t3);font-family:var(--mono);font-size:12px">—</span>`;
+    return`<div class="dsr">
+      <div class="dsn"><div class="dot" style="background:${s.color}"></div>${s.name}
+        <span class="tpill ${s.team==='comercial'?'pc':'pj'}">${s.team==='comercial'?'COM':'JUR'}</span>
+      </div>
+      <div>${editBtns}</div>
+    </div>`;
+  }).join('')||'<div style="color:var(--t3);font-size:13px">Nenhum vendedor cadastrado.</div>';
+
+  return`<div class="card">
+    <div class="ct">Lançar Venda</div>
     <div class="fg">
-      <label class="flbl">Valor (R$) — será SOMADO ao existente no dia</label>
-      <input type="number" class="finp" id="ia" placeholder="Ex: 15000">
+      <label class="flbl">Vendedor</label>
+      <select class="finp" id="is" onchange="inSellerId=this.value;renderMC()">
+        ${opts}
+      </select>
     </div>
-    <button class="bfull" onclick="submitSale()">💾 Adicionar Venda</button>
+    <div class="fg">
+      <label class="flbl">Data</label>
+      <input type="date" class="finp" id="id" value="${curDate}" onchange="inLaunchDate=this.value;renderMC()">
+    </div>
+    <div class="fg">
+      <label class="flbl">Valor a Adicionar (R$)${existingVal>0?` <span style="color:var(--t3);font-weight:400;text-transform:none;letter-spacing:0">— acumulado hoje: ${fmtR(existingVal)}</span>`:''}</label>
+      <input type="number" class="finp" id="ia" placeholder="Ex: 15000" autofocus>
+    </div>
+    <button class="bfull" onclick="submitSale()">Salvar Venda</button>
   </div>
-  <div class="card"><div class="ct">Vendas em ${dd}</div>${rows}</div>`;
+  <div class="card">
+    <div class="ct">Vendas em ${dd}</div>
+    ${rows}
+  </div>`;
 }
 
+
 async function submitSale(){
-  const sid=document.getElementById('is')?.value;
-  const dt=document.getElementById('id')?.value;
+  const sid=inSellerId||document.getElementById('is')?.value;
+  const dt=inLaunchDate||document.getElementById('id')?.value||sd;
   const am=parseFloat(document.getElementById('ia')?.value);
   if(!sid||!dt||isNaN(am)||am<=0){toast('Preencha todos os campos','e');return;}
   try{
-    // Accumulate: get existing amount and add new value
     const existing=(S.sales[dt]&&S.sales[dt][sid])||0;
     const total=existing+am;
     await sb('sales',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({id:sid+'_'+dt,seller_id:sid,date:dt,amount:total,updated_at:new Date().toISOString()})});
-    // Update local state immediately
     if(!S.sales[dt])S.sales[dt]={};S.sales[dt][sid]=total;
-    document.getElementById('ia').value='';
-    toast('✅ +'+fmtR(am)+' adicionado! Total '+dt.split('-').reverse().join('/')+': '+fmtR(total));
+    const el=document.getElementById('ia');if(el)el.value='';
+    toast('Venda registrada · Total '+dt.split('-').reverse().join('/')+': '+fmtR(total));
     renderAll();
   }catch(e){toast('Erro: '+e.message,'e');}
 }
 
-function renderCF(){
-  const cs=S.sellers.filter(s=>s.team==='comercial');
-  const js=S.sellers.filter(s=>s.team==='juridico');
-  const appName=S.appName||'Sales Command';
-  const mkR=(list,t)=>list.map(s=>`<div class="ssr"><div class="ssn"><div class="dot" style="background:${s.color}"></div>${s.name}<span class="tpill ${t==='comercial'?'pc':'pj'}">${t==='comercial'?'Comercial':'Jurídico'}</span></div><button class="bdanger" onclick="removeSeller('${s.id}')">×</button></div>`).join('')
-    ||`<div style="color:var(--muted);font-size:12px;padding:6px 0">Nenhum vendedor.</div>`;
-  return`<div class="card">
-    <div class="ct">Nome do Dashboard</div>
-    <div class="fg"><label class="flbl">Nome que aparece no topo</label>
-      <input class="finp" id="app-name-input" type="text" placeholder="Ex: Ecom Energia · Vendas" value="${appName}">
-    </div>
-    <button class="bfull" style="margin-top:0" onclick="saveAppName()">💾 Salvar Nome</button>
-  </div>
-  <div class="card"><div class="ct">Adicionar Vendedor</div>
-    <div class="fg"><label class="flbl">Nome</label><input class="finp" id="ns" type="text" placeholder="Nome do vendedor" onkeydown="if(event.key==='Enter')addSeller()"></div>
-    <div class="fg"><label class="flbl">Equipe</label><select class="finp" id="nt"><option value="comercial">💼 Comercial</option><option value="juridico">⚖️ Jurídico</option></select></div>
-    <button class="bfull" style="margin-top:0" onclick="addSeller()">+ Adicionar Vendedor</button>
-  </div>
-  <div class="card"><div class="ct" style="color:var(--com)">💼 Equipe Comercial (${cs.length})</div>${mkR(cs,'comercial')}</div>
-  <div class="card"><div class="ct" style="color:var(--jur)">⚖️ Equipe Jurídico (${js.length})</div>${mkR(js,'juridico')}</div>
-  <div class="card"><div class="ct">Conexão</div>
-    <div style="color:var(--muted);font-size:13px;margin-bottom:14px">Dados sincronizados via Supabase.</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="bghost" onclick="reload()">🔄 Sincronizar</button>
-      <button class="bghost" style="border-color:#ff6b6b44;color:var(--red)" onclick="resetConn()">🔌 Trocar Banco</button>
-    </div>
-  </div>`;
-}
 
 async function editSale(sid,dt,currentVal){
   const novo=prompt('Novo valor total para '+dt+' (substitui o atual de R$'+currentVal.toLocaleString('pt-BR')+'):');
@@ -748,8 +793,8 @@ function renderGV(){
           </div>
           <div style="display:flex;align-items:center;gap:6px">
             <span style="color:${seller.color};font-family:monospace;font-weight:700;font-size:13px">${fmtR(v)}</span>
-            <button onclick="editSale('${sid}','${d}',${v})" style="background:#ffd16615;border:1px solid #ffd16644;border-radius:6px;color:#ffd166;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">✏️ Editar</button>
-            <button onclick="deleteSaleGV('${sid}','${d}')" style="background:#ff6b6b15;border:1px solid #ff6b6b44;border-radius:6px;color:#ff6b6b;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑️ Zerar</button>
+            <button onclick="editSale('${sid}','${d}',${v})" style="background:#ffd16615;border:1px solid #ffd16644;border-radius:6px;color:#ffd166;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">Editar</button>
+            <button onclick="deleteSaleGV('${sid}','${d}')" style="background:#ff6b6b15;border:1px solid #ff6b6b44;border-radius:6px;color:#ff6b6b;font-size:11px;padding:3px 8px;cursor:pointer;font-family:inherit">Zerar</button>
           </div>
         </div>`;
       }).join('');
@@ -768,7 +813,7 @@ function renderGV(){
         </div>
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:14px;font-weight:800;color:#4f8aff;font-family:monospace">${fmtR(dayTotal)}</span>
-          <button onclick="deleteDay('${d}')" style="background:#ff6b6b10;border:1px solid #ff6b6b33;border-radius:6px;color:#ff6b6b;font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit">🗑️ Zerar dia</button>
+          <button onclick="deleteDay('${d}')" style="background:#ff6b6b10;border:1px solid #ff6b6b33;border-radius:6px;color:#ff6b6b;font-size:10px;padding:3px 8px;cursor:pointer;font-family:inherit">Zerar dia</button>
         </div>
       </div>
       ${sellers}
@@ -791,7 +836,7 @@ async function saveAppName(){
   if(!name)return;
   try{
     await sb('settings',{method:'POST',headers:{'Prefer':'resolution=merge-duplicates,return=representation'},body:JSON.stringify({key:'app_name',value:name})});
-    S.appName=name;updateAppTitle();toast('Nome atualizado!');
+    S.appName=name;updateAppTitle();toast('Nome atualizado');
   }catch(e){toast('Erro: '+e.message,'e');}
 }
 
